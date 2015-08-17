@@ -1,0 +1,56 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.30723.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlMeta", "SqlMeta\SqlMeta.csproj", "{AE0F14E6-9BB1-4AE0-AEA8-A5C7BF49E390}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{AD57823A-C14D-4D3E-AFBA-3726D750C401}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\NuGet.Config = .nuget\NuGet.Config
+		.nuget\NuGet.exe = .nuget\NuGet.exe
+		.nuget\NuGet.targets = .nuget\NuGet.targets
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlMeta.CodeGeneration", "SqlMeta.CodeGeneration\SqlMeta.CodeGeneration.csproj", "{9764D878-1D11-499A-8571-A43479A4E4FC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlMeta.Tests", "SqlMeta.Tests\SqlMeta.Tests.csproj", "{0B7EEBBB-4ABA-427F-B8E5-F603DDB4E20C}"
+EndProject
+Global
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 4
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = https://dev6.visualstudio.com/defaultcollection
+		SccLocalPath0 = .
+		SccProjectUniqueName1 = SqlMeta\\SqlMeta.csproj
+		SccProjectName1 = SqlMeta
+		SccLocalPath1 = SqlMeta
+		SccProjectUniqueName2 = SqlMeta.CodeGeneration\\SqlMeta.CodeGeneration.csproj
+		SccProjectName2 = SqlMeta.CodeGeneration
+		SccLocalPath2 = SqlMeta.CodeGeneration
+		SccProjectUniqueName3 = SqlMeta.Tests\\SqlMeta.Tests.csproj
+		SccProjectName3 = SqlMeta.Tests
+		SccLocalPath3 = SqlMeta.Tests
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AE0F14E6-9BB1-4AE0-AEA8-A5C7BF49E390}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AE0F14E6-9BB1-4AE0-AEA8-A5C7BF49E390}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AE0F14E6-9BB1-4AE0-AEA8-A5C7BF49E390}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AE0F14E6-9BB1-4AE0-AEA8-A5C7BF49E390}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9764D878-1D11-499A-8571-A43479A4E4FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9764D878-1D11-499A-8571-A43479A4E4FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9764D878-1D11-499A-8571-A43479A4E4FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9764D878-1D11-499A-8571-A43479A4E4FC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0B7EEBBB-4ABA-427F-B8E5-F603DDB4E20C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0B7EEBBB-4ABA-427F-B8E5-F603DDB4E20C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0B7EEBBB-4ABA-427F-B8E5-F603DDB4E20C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0B7EEBBB-4ABA-427F-B8E5-F603DDB4E20C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
