@@ -7,14 +7,13 @@
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Collections.Generic" #>
 <#@ import namespace="SqlMeta.Data.Types" #>
-<#@include file="Manager.tt"#>
+<#@ include file="Manager.tt" #>
 <# var manager = Manager.Create(Host, GenerationEnvironment); #>
 <#@ output extension=".sql" #>
-<#var extention = "sqlGen";#>
-
-
+<# var extention = "sqlGen"; #>
 <#
     var sqlSchema = "dbo";
+
     var includeDrop = true;
     var metaRepo = new MetaRepository(connectionString: manager.ConnectionString);
     var tables = metaRepo.GetTableInfo().Where(t => !t.TableName.Contains("sysdiagram")).ToList();
@@ -25,15 +24,19 @@ foreach (var table in tables)
 
 
 ----------------------|||*****Begin <#=table.TableName#> Select*****|||----------------------
-<# if (includeDrop)
-{#>
+<# 
+if (includeDrop)
+{
+#>
 GO
 IF OBJECT_ID ('[<#=sqlSchema#>].[<#=table.TableName#>Select]') IS NOT NULL
 BEGIN
 	PRINT 'Deleting [<#=sqlSchema#>].[<#=table.TableName#>Select]'
     DROP PROC [<#=sqlSchema#>].[<#=table.TableName#>Select]
 END    
-<#}#>
+<#
+}
+#>
 GO
 PRINT 'Creating [<#=sqlSchema#>].[<#=table.TableName#>Select]'
 GO
@@ -62,17 +65,22 @@ GO
 
 ----------------------|||*****Begin <#=table.TableName#> Find*****|||----------------------
 
-<#var sprocFindName = string.Format("{0}Find", table.TableName);
+<#
+var sprocFindName = string.Format("{0}Find", table.TableName);
 if (includeDrop)
-    { #>
+{ 
+#>
 GO
 IF OBJECT_ID ('[<#=sqlSchema#>].[<#=sprocFindName#>]') IS NOT NULL 
 BEGIN
 	PRINT 'Deleting [<#=sqlSchema#>].[<#=sprocFindName#>]'
 	DROP PROC [<#=sqlSchema#>].[<#=sprocFindName#>] 
 END
-<# } #>
+<# 
+} 
+#>
 GO
+
 PRINT 'Creating [<#=sqlSchema#>].[<#=sprocFindName#>]'
 GO
 -- =============================================
@@ -81,8 +89,10 @@ GO
 -- Description: Warning, this is auto-generated and might be over written. Do not edit.
 -- =============================================
 CREATE PROCEDURE [<#=sqlSchema#>].[<#=table.TableName#>Find]
-<#  var useComma = false;
-    foreach (var column in table.Columns){#>
+<#  
+var useComma = false;
+foreach (var column in table.Columns){
+#>
 <#=String.Format("{0}{1}", (useComma ? "," : ""), GetDataTypeDeclaration(column: column))#><#useComma = true;}#>
 AS
 BEGIN
@@ -101,22 +111,27 @@ SET NOCOUNT ON
 	FROM [<#=sqlSchema#>].[<#=table.TableName#>]
 	WHERE (1=1)'; --this condition is just to make dynamic sql creation easier
 
-	<# foreach (var column in table.Columns)
-{#>
+<# 
+foreach (var column in table.Columns)
+{
+#>
 	IF(@<#=column.ColumnName#> IS NOT NULL)
 		SET @Query = @Query + ' AND ([<#=column.ColumnName#>] = @<#=column.ColumnName#>)';
-
-<#}#>
+<#
+}
+#>
 	    
 	--execute the sql
 	EXECUTE sp_Executesql @Query
 		,@Parameters
-	<#
-    foreach (var column in table.Columns)
-    { #>
+<#
+foreach (var column in table.Columns)
+{ 
+#>
 		<#=String.Format(",@{0}",column.ColumnName) #>
-   <#
-    } #>
+<#
+} 
+#>
 END
 GO
 ----------------------|||*****END <#=table.TableName#> Find*****|||----------------------
@@ -129,16 +144,20 @@ GO
 
 ----------------------|||*****BEGIN <#=table.TableName#> Search*****|||----------------------
 
-<#var sprocSearchName = string.Format("{0}Search", table.TableName);
+<#
+var sprocSearchName = string.Format("{0}Search", table.TableName);
 if (includeDrop)
-    { #>
+{ 
+#>
 GO
 IF OBJECT_ID ('[<#=sqlSchema#>].[<#=sprocSearchName#>]') IS NOT NULL 
 BEGIN
 	PRINT 'Deleting [<#=sqlSchema#>].[<#=sprocSearchName#>]'
 	DROP PROC [<#=sqlSchema#>].[<#=sprocSearchName#>] 
 END
-<# } #>
+<# 
+} 
+#>
 GO
 PRINT 'Deleting [<#=sqlSchema#>].[<#=sprocSearchName#>]'
 GO
@@ -163,32 +182,36 @@ BEGIN
 	WHERE 1 = 1
 	'
 
-		<#
-    var paramBackFills = new List<string>();
-    foreach (var column in table.Columns)
+<#
+var paramBackFills = new List<string>();
+foreach (var column in table.Columns)
+{
+    foreach (var t in BuildSearchConditionParameter(column: column))
     {
-        foreach (var t in BuildSearchConditionParameter(column: column))
+        if (t != null)
         {
-            if (t != null)
-            {
-                paramBackFills.Add(t.Item1); //so that later we can add them to param list for the dynamic sql
-                #>
+            paramBackFills.Add(t.Item1); //so that later we can add them to param list for the dynamic sql
+#>
 			if(@<#=t.Item1#> IS NOT NULL)
 				SET @Query = @Query + '<#=t.Item2 #>'
 
-		<# }
-        }
-    } #>
+<# 
+		}
+    }
+} 
+#>
 
 	--execute the sql
 	EXECUTE sp_Executesql @Query
 		,@Parameters
-	<#
-    foreach (var backFillParam in paramBackFills)
-    {#>
+<#
+foreach (var backFillParam in paramBackFills)
+{
+#>
 		,@<#=backFillParam#>  
-    <#}
-	#>
+<#
+}
+#>
 
 END
 GO
@@ -197,16 +220,20 @@ GO
 
 
 ----------------------|||*****BEGIN <#=table.TableName#> Update*****|||----------------------
-<#var updateSprocName = string.Format("{0}Update", table.TableName);
+<#
+var updateSprocName = string.Format("{0}Update", table.TableName);
 if (includeDrop)
-    { #>
+{ 
+#>
 GO
 IF OBJECT_ID ('[<#=sqlSchema#>].[<#=updateSprocName#>]') IS NOT NULL 
 BEGIN
 	PRINT 'Deleting [<#=sqlSchema#>].[<#=updateSprocName#>]'
 	DROP PROC [<#=sqlSchema#>].[<#=updateSprocName#>] 
 END
-<# } #>
+<# 
+} 
+#>
 GO
 PRINT 'Creating [<#=sqlSchema#>].[<#=updateSprocName#>]'
 GO
@@ -228,11 +255,13 @@ SET
 <#
 var comma = "";
 foreach (var c in table.Columns)
-{#>
+{
+#>
   <#=String.Format("{1}[{0}] = @{0}", c.ColumnName, comma)#>  
 <#
     comma = ",";
-}#>
+}
+#>
 WHERE <#=String.Format("[{0}Guid] = @{0}Guid",table.TableName)#>
 
 END
@@ -242,16 +271,20 @@ GO
 
 
 ----------------------|||*****BEGIN <#=table.TableName#> Insert*****|||----------------------
-<#var insertSprocName = string.Format("{0}Insert", table.TableName);
+<#
+var insertSprocName = string.Format("{0}Insert", table.TableName);
 if (includeDrop)
-    { #>
+{ 
+#>
 GO
 IF OBJECT_ID ('[<#=sqlSchema#>].[<#=insertSprocName#>]') IS NOT NULL 
 BEGIN
 	PRINT 'Deleting [<#=sqlSchema#>].[<#=insertSprocName#>]'
 	DROP PROC [<#=sqlSchema#>].[<#=insertSprocName#>] 
 END
-<# } #>
+<# 
+} 
+#>
 GO
 PRINT 'Creating [<#=sqlSchema#>].[<#=insertSprocName#>]'
 GO
@@ -270,22 +303,26 @@ INSERT INTO <#=String.Format("[{0}].[{1}]",sqlSchema,table.TableName)#>
 <#
     comma = "";
 	foreach (var c in table.Columns)
-{#>
+{
+#>
 <#=String.Format("{0}[{1}]",comma,c.ColumnName)#>
 <#
 comma = ",";
-}#>
+}
+#>
 )
 VALUES
 (
 <#
     comma = "";
 	foreach (var c in table.Columns)
-{#>
+{
+#>
 <#=String.Format("{0}@{1}",comma,c.ColumnName)#>
 <#
     comma = ",";
-}#>
+}
+#>
 )
 END
 GO
