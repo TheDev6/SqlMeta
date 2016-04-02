@@ -56,6 +56,7 @@
     <Compile Include="Data\Types\SqlTableInfo.cs" />
     <Compile Include="Data\Wrappers\Base\IDatabaseWrapper.cs" />
     <Compile Include="Data\Wrappers\DatabaseWrapper.cs" />
+    <Compile Include="Inputs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup />
