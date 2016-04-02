@@ -154,6 +154,10 @@ UpgradeLog*.htm
 **/App_Data/*.ldf
 **/App_Data/*.sdf
 
+#dll
+*.dll
+*.cache
+
 
 #LightSwitch generated files
 GeneratedArtifacts/
