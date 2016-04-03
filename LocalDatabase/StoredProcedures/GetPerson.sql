@@ -1,18 +1,18 @@
 ﻿CREATE PROCEDURE [dbo].[GetPerson]
-	@personId int
+	@personGuid uniqueidentifier
 AS
 BEGIN
 	SET NOCOUNT ON;
 
 	SELECT 
-		[PersonId], 
+		[PersonGuid], 
 		[FirstName], 
 		[LastName], 
 		[Age], 
 		[Height], 
 		[Weight] 
 	FROM [dbo].[Person] 
-	WHERE [PersonId] = @personId
+	WHERE [PersonGuid] = @personGuid
 
 	RETURN 0
 END
