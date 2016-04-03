@@ -62,7 +62,7 @@
     </None>
     <None Include="Templates\DatabaseContext.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>DatabaseContext.csGen</LastGenOutput>
+      <LastGenOutput>DatabaseContext.cs</LastGenOutput>
     </None>
     <None Include="Templates\SqlTableToCSharpClass.tt">
       <Generator>TextTemplatingFileGenerator</Generator>

@@ -4,15 +4,15 @@
 <#@ assembly name="System.Data, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" #>
 <#@ import namespace="System.Linq" #>
 <#@ import namespace="System.Text" #>
-<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.Collections.Generic" #>  
+<#@ import namespace="SqlMeta" #> 	
 <#@ include file="Manager.tt" #>
 <# var manager = Manager.Create(Host, GenerationEnvironment); #>
-<#@ output extension=".csGen" #>
-<# var extention = "csGen"; #>
+<#@ output extension=".cs" #>
+<# var extension = "cs"; #>
 <#  
-	var databaseName = "YourDatabase";
-    var nameSpace = "Add.Your.Namespace";
-
+	var databaseName = Inputs.Database;
+    var nameSpace = Inputs.DatabaseNamespace; 
     var dataRepo = new MetaRepository(manager.ConnectionString);
     var tableNames = dataRepo.GetTableNames().Where(t => !t.Contains("sysdiagram")).ToList();
 	var tables = dataRepo.GetTableInfo().Where(t => !t.TableName.Contains("sysdiagram")).ToList();
@@ -123,7 +123,7 @@ foreach (var proc in nonBoilerBlateSprocs)
 
 
 <#//Start the interface file for the context
-manager.StartNewFile(String.Format("I{0}Context.{1}",databaseName,extention));
+manager.StartNewFile(String.Format("I{0}Context.{1}",databaseName,extension));
 #>
 namespace <#=nameSpace#>
 {
@@ -189,7 +189,7 @@ foreach (var proc in nonBoilerBlateSprocs)
 var sprocResultTypesNamespace = "Ch.Core.SqlMetaAccess";
 foreach (var proc in nonBoilerBlateSprocs)
 {
-	manager.StartNewFile(String.Format("{0}.{1}", proc.Name, extention));
+	manager.StartNewFile(String.Format("{0}.{1}", proc.Name, extension));
 #>		
 namespace <#=sprocResultTypesNamespace#>
 {
@@ -215,7 +215,7 @@ foreach (var column in proc.ResultColumns)
 <#
 foreach (var table in tables)
 {
-    manager.StartNewFile(String.Format("{0}.{1}", table.TableName, extention));
+    manager.StartNewFile(String.Format("{0}.{1}", table.TableName, extension));
 #>
 
 namespace <#=nameSpace#>
