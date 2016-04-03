@@ -10,19 +10,16 @@
 <#@ include file="Manager.tt" #>
 <# var manager = Manager.Create(Host, GenerationEnvironment); #>
 <#@ output extension=".sql" #>
-<# var extention = "sqlGen"; #>
+<# var extension = "sql"; #>
 <#
-    var sqlSchema = "dbo";
-
+    var sqlSchema = "dbo"; //This should come from the database?
     var includeDrop = true;
-    var metaRepo = new MetaRepository(connectionString: manager.ConnectionString);
+    var metaRepo = new MetaRepository(manager.ConnectionString);
     var tables = metaRepo.GetTableInfo().Where(t => !t.TableName.Contains("sysdiagram")).ToList();
 foreach (var table in tables)
 {
-   // manager.StartNewFile(String.Format("bm.admin.{0}Index.{1}", tableFirstLower, extention));
+   //manager.StartNewFile(String.Format("bm.admin.{0}Index.{1}", tableFirstLower, extension));
 #>
-
-
 ----------------------|||*****Begin <#=table.TableName#> Select*****|||----------------------
 <# 
 if (includeDrop)
@@ -46,16 +43,14 @@ GO
 -- Description: Warning, this is auto-generated and might be over written. Do not edit.
 -- =============================================
 CREATE PROCEDURE [<#=sqlSchema#>].[<#=table.TableName#>Select]
-
-<#=String.Format("@{0}Guid UNIQUEIDENTIFIER",table.TableName)#>
-
+    <#=String.Format("@{0}Guid UNIQUEIDENTIFIER",table.TableName)#>
 AS
 BEGIN
-SET NOCOUNT ON
+    SET NOCOUNT ON
 
-SELECT *
-FROM [<#=sqlSchema#>].[<#=table.TableName#>]
-WHERE ([<#=table.TableName#>Guid] = @<#=table.TableName#>Guid)
+    SELECT *
+    FROM [<#=sqlSchema#>].[<#=table.TableName#>]
+    WHERE ([<#=table.TableName#>Guid] = @<#=table.TableName#>Guid)
 	
 END
 GO
@@ -64,7 +59,6 @@ GO
 
 
 ----------------------|||*****Begin <#=table.TableName#> Find*****|||----------------------
-
 <#
 var sprocFindName = string.Format("{0}Find", table.TableName);
 if (includeDrop)
@@ -93,16 +87,17 @@ CREATE PROCEDURE [<#=sqlSchema#>].[<#=table.TableName#>Find]
 var useComma = false;
 foreach (var column in table.Columns){
 #>
-<#=String.Format("{0}{1}", (useComma ? "," : ""), GetDataTypeDeclaration(column: column))#><#useComma = true;}#>
+    <#=String.Format("{0}{1}", (useComma ? "," : ""), GetDataTypeDeclaration(column: column))#><#useComma = true;}#>
 AS
 BEGIN
 SET NOCOUNT ON
 
 	DECLARE @Parameters NVARCHAR(MAX) = '
-	<#useComma = false;
-	foreach (var column in table.Columns){ #>
-<#=String.Format("{0}{1}", (useComma ? "," : ""), GetDataTypeDeclaration(column: column)) #><# useComma = true;} #>
-	';
+<#
+useComma = false;
+foreach (var column in table.Columns){ 
+#>
+        <#=String.Format("{0}{1}", (useComma ? "," : ""), GetDataTypeDeclaration(column: column)) #><# useComma = true;} #>';
 
 	DECLARE @Query NVARCHAR(MAX)
 
@@ -138,10 +133,6 @@ GO
 
 
 
-
-
-
-
 ----------------------|||*****BEGIN <#=table.TableName#> Search*****|||----------------------
 
 <#
@@ -173,14 +164,12 @@ BEGIN
 	SET NOCOUNT ON
 
 	DECLARE @Parameters NVARCHAR(MAX) = '
-		<#=BuildSearchInputParameters(columns:table.Columns)#>
-	'
+		<#=BuildSearchInputParameters(columns:table.Columns)#>'
 
 	Declare @Query nvarchar(MAX) = '
 	SELECT *
 	FROM [dbo].[<#=table.TableName#>]
-	WHERE 1 = 1
-	'
+	WHERE 1 = 1'
 
 <#
 var paramBackFills = new List<string>();
@@ -192,8 +181,8 @@ foreach (var column in table.Columns)
         {
             paramBackFills.Add(t.Item1); //so that later we can add them to param list for the dynamic sql
 #>
-			if(@<#=t.Item1#> IS NOT NULL)
-				SET @Query = @Query + '<#=t.Item2 #>'
+    if(@<#=t.Item1#> IS NOT NULL)
+	    SET @Query = @Query + '<#=t.Item2 #>'
 
 <# 
 		}
@@ -243,26 +232,25 @@ GO
 -- Description: Warning, this is auto-generated and might be over written. Do not edit.
 -- =============================================
 CREATE PROCEDURE [<#=sqlSchema#>].[<#=table.TableName#>Update]
-
-<#=BuildUpdateInputParams(columns:table.Columns)#>
+    <#=BuildUpdateInputParams(columns:table.Columns)#>
 
 AS
 BEGIN
-SET NOCOUNT ON
+    SET NOCOUNT ON
 
-UPDATE [<#=sqlSchema#>].[<#=table.TableName#>]
-SET
+    UPDATE [<#=sqlSchema#>].[<#=table.TableName#>]
+    SET
 <#
 var comma = "";
 foreach (var c in table.Columns)
 {
 #>
-  <#=String.Format("{1}[{0}] = @{0}", c.ColumnName, comma)#>  
+        <#=String.Format("{1}[{0}] = @{0}", c.ColumnName, comma)#>  
 <#
     comma = ",";
 }
 #>
-WHERE <#=String.Format("[{0}Guid] = @{0}Guid",table.TableName)#>
+    WHERE <#=String.Format("[{0}Guid] = @{0}Guid",table.TableName)#>
 
 END
 GO
@@ -294,39 +282,40 @@ GO
 -- Description: Warning, this is auto-generated and might be over written. Do not edit.
 -- =============================================
 CREATE PROCEDURE [<#=sqlSchema#>].[<#=table.TableName#>Insert]
-<#=BuildUpdateInputParams(columns:table.Columns)#>
+    <#=BuildUpdateInputParams(columns:table.Columns)#>
 AS
 BEGIN
-SET NOCOUNT ON
-INSERT INTO <#=String.Format("[{0}].[{1}]",sqlSchema,table.TableName)#>
-(
+    SET NOCOUNT ON
+    INSERT INTO <#=String.Format("[{0}].[{1}]",sqlSchema,table.TableName)#>
+    (
 <#
     comma = "";
 	foreach (var c in table.Columns)
 {
 #>
-<#=String.Format("{0}[{1}]",comma,c.ColumnName)#>
+        <#=String.Format("{0}[{1}]",comma,c.ColumnName)#>
 <#
 comma = ",";
 }
 #>
-)
-VALUES
-(
+    )
+    VALUES
+    (
 <#
     comma = "";
 	foreach (var c in table.Columns)
 {
 #>
-<#=String.Format("{0}@{1}",comma,c.ColumnName)#>
+        <#=String.Format("{0}@{1}",comma,c.ColumnName)#>
 <#
     comma = ",";
 }
 #>
-)
+    )
 END
 GO
 ----------------------|||*****END <#=table.TableName#> Insert*****|||----------------------
+
 
 
 ----------------------|||*****BEGIN <#=table.TableName#> Delete*****|||----------------------
@@ -353,12 +342,13 @@ GO
 -- Description: Warning, this is auto-generated and might be over written. Do not edit.
 -- =============================================
 CREATE PROCEDURE [<#=sqlSchema#>].[<#=deleteSprocName#>]
- @<#=table.TableName#>Guid UNIQUEIDENTIFIER
+    @<#=table.TableName#>Guid UNIQUEIDENTIFIER
 AS
 BEGIN
-SET NOCOUNT ON
-DELETE FROM <#=String.Format("[{0}].[{1}]",sqlSchema,table.TableName)#>
-WHERE <#=String.Format("[{0}Guid] = @{0}Guid",table.TableName)#>
+    SET NOCOUNT ON
+
+    DELETE FROM <#=String.Format("[{0}].[{1}]",sqlSchema,table.TableName)#>
+    WHERE <#=String.Format("[{0}Guid] = @{0}Guid",table.TableName)#>
 
 END
 GO
