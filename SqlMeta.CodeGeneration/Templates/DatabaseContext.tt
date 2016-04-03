@@ -1,6 +1,6 @@
 ﻿<#@ template debug="true" hostspecific="true" language="C#" #>
 <#@ assembly name="System.Core" #>
-<#@ assembly name="$(ProjectDir)\Templates\SqlMeta.dll" #>
+<#@ assembly name="$(ProjectDir)\bin\Debug\SqlMeta.dll" #>
 <#@ assembly name="System.Data, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" #>
 <#@ import namespace="System.Linq" #>
 <#@ import namespace="System.Text" #>
