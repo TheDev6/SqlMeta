@@ -49,6 +49,7 @@
   <ItemGroup>
     <None Include="Templates\Manager.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Manager.cs</LastGenOutput>
     </None>
     <None Include="Templates\SqlProcedures.tt">
       <Generator>TextTemplatingFileGenerator</Generator>

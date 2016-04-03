@@ -23,7 +23,6 @@
 <#@ import namespace="SqlMeta" #>
 <#@ import namespace="SqlMeta.Data.Repositories" #>
 <#@ import namespace="SqlMeta.Data.Types" #>
-<#@ output extension="/" #>
 
 <#+
 // https://github.com/damieng/DamienGKit/blob/master/T4/MultipleOutputHelper/MultipleOutputHelper.ttinclude
