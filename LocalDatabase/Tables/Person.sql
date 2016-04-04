@@ -1,0 +1,9 @@
+﻿CREATE TABLE [dbo].[Person]
+(
+	[PersonGuid] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY DEFAULT NEWSEQUENTIALID(), 
+    [FirstName] VARCHAR(50) NOT NULL, 
+    [LastName] VARCHAR(50) NOT NULL, 
+    [Age] INT NOT NULL, 
+    [Height] INT NULL, 
+    [Weight] INT NULL
+)

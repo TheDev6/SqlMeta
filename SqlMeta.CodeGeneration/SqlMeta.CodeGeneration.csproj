@@ -45,11 +45,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Templates\Manager.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Manager.tt</DependentUpon>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Templates\Manager.tt">
@@ -62,19 +57,20 @@
     </None>
     <None Include="Templates\DatabaseContext.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>DatabaseContext.csGen</LastGenOutput>
+      <LastGenOutput>DatabaseContext.cs</LastGenOutput>
     </None>
     <None Include="Templates\SqlTableToCSharpClass.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>SqlTableToCSharpClass.cs</LastGenOutput>
     </None>
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Templates\Dapper.dll" />
-    <Content Include="Templates\SqlMeta.dll" />
+    <ProjectReference Include="..\SqlMeta\SqlMeta.csproj">
+      <Project>{ae0f14e6-9bb1-4ae0-aea8-a5c7bf49e390}</Project>
+      <Name>SqlMeta</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

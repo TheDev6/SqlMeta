@@ -1,30 +1,31 @@
-﻿<#@ assembly name="System.Core"#>
-<#@ assembly name="System.Data.Entity.Design"#>
-<#@ assembly name="System.Data.Linq"#>
-<#@ assembly name="EnvDTE"#>
-<#@ assembly name="System.Xml"#>
-<#@ assembly name="System.Xml.Linq"#>
-<#@ assembly name="$(ProjectDir)\Templates\SqlMeta.dll" #>
-<#@ import namespace="System"#>
-<#@ import namespace="System.CodeDom"#>
-<#@ import namespace="System.CodeDom.Compiler"#>
-<#@ import namespace="System.Collections.Generic"#>
-<#@ import namespace="System.Data.Linq"#>
-<#@ import namespace="System.Data.Linq.Mapping"#>
+﻿<#@ assembly name="System.Core" #>
+<#@ assembly name="System.Data.Entity.Design" #>
+<#@ assembly name="System.Data.Linq" #>
+<#@ assembly name="EnvDTE" #>
+<#@ assembly name="System.Xml" #>
+<#@ assembly name="System.Xml.Linq" #>
+<#@ assembly name="$(ProjectDir)\bin\Debug\SqlMeta.dll" #>
+<#@ import namespace="System" #>
+<#@ import namespace="System.CodeDom" #>
+<#@ import namespace="System.CodeDom.Compiler" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.Data.Linq" #>
+<#@ import namespace="System.Data.Linq.Mapping" #>
 <#@ import namespace="System.Globalization" #>
-<#@ import namespace="System.IO"#>
-<#@ import namespace="System.Linq"#>
-<#@ import namespace="System.Reflection"#>
-<#@ import namespace="System.Text"#>
-<#@ import namespace="System.Xml.Linq"#>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Reflection" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Xml.Linq" #>
 <#@ import namespace="EnvDTE" #>
-<#@ import namespace="Microsoft.VisualStudio.TextTemplating"#>
-<#@ import namespace="System.Globalization"#>
+<#@ import namespace="Microsoft.VisualStudio.TextTemplating" #>
+<#@ import namespace="System.Globalization" #>	
+<#@ import namespace="SqlMeta" #>
 <#@ import namespace="SqlMeta.Data.Repositories" #>
 <#@ import namespace="SqlMeta.Data.Types" #>
 
 <#+
-// https://raw.github.com/damieng/DamienGKit
+// https://github.com/damieng/DamienGKit/blob/master/T4/MultipleOutputHelper/MultipleOutputHelper.ttinclude
 // http://damieng.com/blog/2009/11/06/multiple-outputs-from-t4-made-easy-revisited
 
 // Manager class records the various blocks so it can split them up
@@ -35,7 +36,7 @@ class Manager {
         public bool IncludeInDefault;
     }
 
-	public string ConnectionString = @"";
+        public string ConnectionString = Inputs.Connection;
 
     private Block currentBlock;
     private List<Block> files = new List<Block>();
@@ -329,4 +330,5 @@ class Manager {
                 checkOutAction.EndInvoke(checkOutAction.BeginInvoke(fileName, null, null));
         }
     }
-} #>
+} 
+#>
