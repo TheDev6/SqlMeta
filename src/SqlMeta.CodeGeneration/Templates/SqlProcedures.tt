@@ -1,0 +1,596 @@
+﻿<#@ template debug="true" hostspecific="true" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ assembly name="$(ProjectDir)\bin\Debug\SqlMeta.dll" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Runtime.InteropServices.ComTypes" #>
+<#@ import namespace="System.Security" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="SqlMeta.Data.Types" #>
+<#@ include file="Manager.tt" #>
+<# var manager = Manager.Create(Host, GenerationEnvironment); #>
+<#@ output extension=".sql" #>
+<# var extension = "sql"; #>
+<#
+    var sqlSchema = "dbo"; //This should come from the database?
+    var includeDrop = true;
+    var metaRepo = new MetaRepository(manager.ConnectionString);
+    var tables = metaRepo.GetTableInfo().Where(t => !t.TableName.Contains("sysdiagram")).ToList();
+foreach (var table in tables)
+{
+   //manager.StartNewFile(String.Format("bm.admin.{0}Index.{1}", tableFirstLower, extension));
+#>
+----------------------|||*****Begin <#=table.TableName#> Select*****|||----------------------
+<# 
+if (includeDrop)
+{
+#>
+GO
+IF OBJECT_ID ('[<#=sqlSchema#>].[<#=table.TableName#>Select]') IS NOT NULL
+BEGIN
+	PRINT 'Deleting [<#=sqlSchema#>].[<#=table.TableName#>Select]'
+    DROP PROC [<#=sqlSchema#>].[<#=table.TableName#>Select]
+END    
+<#
+}
+#>
+GO
+PRINT 'Creating [<#=sqlSchema#>].[<#=table.TableName#>Select]'
+GO
+-- =============================================
+-- Author:  <#=System.Environment.MachineName#>
+-- Create date: <#=DateTime.Now.ToString()#>
+-- Description: Warning, this is auto-generated and might be over written. Do not edit.
+-- =============================================
+CREATE PROCEDURE [<#=sqlSchema#>].[<#=table.TableName#>Select]
+    <#=String.Format("@{0}Guid UNIQUEIDENTIFIER",table.TableName)#>
+AS
+BEGIN
+    SET NOCOUNT ON
+
+    SELECT *
+    FROM [<#=sqlSchema#>].[<#=table.TableName#>]
+    WHERE ([<#=table.TableName#>Guid] = @<#=table.TableName#>Guid)
+	
+END
+GO
+----------------------|||*****End <#=table.TableName#> Select*****|||----------------------
+
+
+
+----------------------|||*****Begin <#=table.TableName#> Find*****|||----------------------
+<#
+var sprocFindName = string.Format("{0}Find", table.TableName);
+if (includeDrop)
+{ 
+#>
+GO
+IF OBJECT_ID ('[<#=sqlSchema#>].[<#=sprocFindName#>]') IS NOT NULL 
+BEGIN
+	PRINT 'Deleting [<#=sqlSchema#>].[<#=sprocFindName#>]'
+	DROP PROC [<#=sqlSchema#>].[<#=sprocFindName#>] 
+END
+<# 
+} 
+#>
+GO
+
+PRINT 'Creating [<#=sqlSchema#>].[<#=sprocFindName#>]'
+GO
+-- =============================================
+-- Author:  <#=System.Environment.MachineName#>
+-- Create date: <#=DateTime.Now.ToString()#>
+-- Description: Warning, this is auto-generated and might be over written. Do not edit.
+-- =============================================
+CREATE PROCEDURE [<#=sqlSchema#>].[<#=table.TableName#>Find]
+<#  
+var useComma = false;
+foreach (var column in table.Columns){
+#>
+    <#=String.Format("{0}{1}", (useComma ? "," : ""), GetDataTypeDeclaration(column: column))#><#useComma = true;}#>
+AS
+BEGIN
+SET NOCOUNT ON
+
+	DECLARE @Parameters NVARCHAR(MAX) = '
+<#
+useComma = false;
+foreach (var column in table.Columns){ 
+#>
+        <#=String.Format("{0}{1}", (useComma ? "," : ""), GetDataTypeDeclaration(column: column)) #><# useComma = true;} #>';
+
+	DECLARE @Query NVARCHAR(MAX)
+
+	SET @Query = '
+	SELECT *
+	FROM [<#=sqlSchema#>].[<#=table.TableName#>]
+	WHERE (1=1)'; --this condition is just to make dynamic sql creation easier
+
+<# 
+foreach (var column in table.Columns)
+{
+#>
+	IF(@<#=column.ColumnName#> IS NOT NULL)
+		SET @Query = @Query + ' AND ([<#=column.ColumnName#>] = @<#=column.ColumnName#>)';
+<#
+}
+#>
+	    
+	--execute the sql
+	EXECUTE sp_Executesql @Query
+		,@Parameters
+<#
+foreach (var column in table.Columns)
+{ 
+#>
+		<#=String.Format(",@{0}",column.ColumnName) #>
+<#
+} 
+#>
+END
+GO
+----------------------|||*****END <#=table.TableName#> Find*****|||----------------------
+
+
+
+----------------------|||*****BEGIN <#=table.TableName#> Search*****|||----------------------
+
+<#
+var sprocSearchName = string.Format("{0}Search", table.TableName);
+if (includeDrop)
+{ 
+#>
+GO
+IF OBJECT_ID ('[<#=sqlSchema#>].[<#=sprocSearchName#>]') IS NOT NULL 
+BEGIN
+	PRINT 'Deleting [<#=sqlSchema#>].[<#=sprocSearchName#>]'
+	DROP PROC [<#=sqlSchema#>].[<#=sprocSearchName#>] 
+END
+<# 
+} 
+#>
+GO
+PRINT 'Deleting [<#=sqlSchema#>].[<#=sprocSearchName#>]'
+GO
+-- =============================================
+-- Author:  <#=System.Environment.MachineName#>
+-- Create date: <#=DateTime.Now.ToString()#>
+-- Description: Warning, this is auto-generated and might be over written. Do not edit.
+-- =============================================
+CREATE PROCEDURE [<#=sqlSchema#>].[<#=table.TableName#>Search]
+	<#=BuildSearchInputParameters(columns:table.Columns)#>
+AS
+BEGIN
+	SET NOCOUNT ON
+
+	DECLARE @Parameters NVARCHAR(MAX) = '
+		<#=BuildSearchInputParameters(columns:table.Columns)#>'
+
+	Declare @Query nvarchar(MAX) = '
+	SELECT *
+	FROM [dbo].[<#=table.TableName#>]
+	WHERE 1 = 1'
+
+<#
+var paramBackFills = new List<string>();
+foreach (var column in table.Columns)
+{
+    foreach (var t in BuildSearchConditionParameter(column: column))
+    {
+        if (t != null)
+        {
+            paramBackFills.Add(t.Item1); //so that later we can add them to param list for the dynamic sql
+#>
+    if(@<#=t.Item1#> IS NOT NULL)
+	    SET @Query = @Query + '<#=t.Item2 #>'
+
+<# 
+		}
+    }
+} 
+#>
+
+	--execute the sql
+	EXECUTE sp_Executesql @Query
+		,@Parameters
+<#
+foreach (var backFillParam in paramBackFills)
+{
+#>
+		,@<#=backFillParam#>  
+<#
+}
+#>
+
+END
+GO
+----------------------|||*****END <#=table.TableName#> Search*****|||----------------------
+
+
+
+----------------------|||*****BEGIN <#=table.TableName#> Update*****|||----------------------
+<#
+var updateSprocName = string.Format("{0}Update", table.TableName);
+if (includeDrop)
+{ 
+#>
+GO
+IF OBJECT_ID ('[<#=sqlSchema#>].[<#=updateSprocName#>]') IS NOT NULL 
+BEGIN
+	PRINT 'Deleting [<#=sqlSchema#>].[<#=updateSprocName#>]'
+	DROP PROC [<#=sqlSchema#>].[<#=updateSprocName#>] 
+END
+<# 
+} 
+#>
+GO
+PRINT 'Creating [<#=sqlSchema#>].[<#=updateSprocName#>]'
+GO
+-- =============================================
+-- Author:  <#=System.Environment.MachineName#>
+-- Create date: <#=DateTime.Now.ToString()#>
+-- Description: Warning, this is auto-generated and might be over written. Do not edit.
+-- =============================================
+CREATE PROCEDURE [<#=sqlSchema#>].[<#=table.TableName#>Update]
+    <#=BuildUpdateInputParams(columns:table.Columns)#>
+
+AS
+BEGIN
+    SET NOCOUNT ON
+
+    UPDATE [<#=sqlSchema#>].[<#=table.TableName#>]
+    SET
+<#
+var comma = "";
+foreach (var c in table.Columns)
+{
+#>
+        <#=String.Format("{1}[{0}] = @{0}", c.ColumnName, comma)#>  
+<#
+    comma = ",";
+}
+#>
+    WHERE <#=String.Format("[{0}Guid] = @{0}Guid",table.TableName)#>
+
+END
+GO
+----------------------|||*****END <#=table.TableName#> Update*****|||----------------------
+
+
+
+----------------------|||*****BEGIN <#=table.TableName#> Insert*****|||----------------------
+<#
+var insertSprocName = string.Format("{0}Insert", table.TableName);
+if (includeDrop)
+{ 
+#>
+GO
+IF OBJECT_ID ('[<#=sqlSchema#>].[<#=insertSprocName#>]') IS NOT NULL 
+BEGIN
+	PRINT 'Deleting [<#=sqlSchema#>].[<#=insertSprocName#>]'
+	DROP PROC [<#=sqlSchema#>].[<#=insertSprocName#>] 
+END
+<# 
+} 
+#>
+GO
+PRINT 'Creating [<#=sqlSchema#>].[<#=insertSprocName#>]'
+GO
+-- =============================================
+-- Author:  <#=System.Environment.MachineName#>
+-- Create date: <#=DateTime.Now.ToString()#>
+-- Description: Warning, this is auto-generated and might be over written. Do not edit.
+-- =============================================
+CREATE PROCEDURE [<#=sqlSchema#>].[<#=table.TableName#>Insert]
+    <#=BuildUpdateInputParams(columns:table.Columns)#>
+AS
+BEGIN
+    SET NOCOUNT ON
+    INSERT INTO <#=String.Format("[{0}].[{1}]",sqlSchema,table.TableName)#>
+    (
+<#
+    comma = "";
+	foreach (var c in table.Columns)
+{
+#>
+        <#=String.Format("{0}[{1}]",comma,c.ColumnName)#>
+<#
+comma = ",";
+}
+#>
+    )
+    VALUES
+    (
+<#
+    comma = "";
+	foreach (var c in table.Columns)
+{
+#>
+        <#=String.Format("{0}@{1}",comma,c.ColumnName)#>
+<#
+    comma = ",";
+}
+#>
+    )
+END
+GO
+----------------------|||*****END <#=table.TableName#> Insert*****|||----------------------
+
+
+
+----------------------|||*****BEGIN <#=table.TableName#> Delete*****|||----------------------
+<#
+var deleteSprocName = string.Format("{0}Delete", table.TableName);
+if (includeDrop)
+{ 
+#>
+GO
+IF OBJECT_ID ('[<#=sqlSchema#>].[<#=deleteSprocName#>]') IS NOT NULL 
+BEGIN
+	PRINT 'Deleting [<#=sqlSchema#>].[<#=deleteSprocName#>]'
+	DROP PROC [<#=sqlSchema#>].[<#=deleteSprocName#>] 
+END
+<#
+}
+#>
+GO
+PRINT 'Creating [<#=sqlSchema#>].[<#=deleteSprocName#>]'
+GO
+-- =============================================
+-- Author:  <#=System.Environment.MachineName#>
+-- Create date: <#=DateTime.Now.ToString()#>
+-- Description: Warning, this is auto-generated and might be over written. Do not edit.
+-- =============================================
+CREATE PROCEDURE [<#=sqlSchema#>].[<#=deleteSprocName#>]
+    @<#=table.TableName#>Guid UNIQUEIDENTIFIER
+AS
+BEGIN
+    SET NOCOUNT ON
+
+    DELETE FROM <#=String.Format("[{0}].[{1}]",sqlSchema,table.TableName)#>
+    WHERE <#=String.Format("[{0}Guid] = @{0}Guid",table.TableName)#>
+
+END
+GO
+----------------------|||*****END <#=table.TableName#> Delete*****|||----------------------
+
+
+<# manager.EndBlock(); #>
+
+<#
+}
+#>
+
+<# manager.Process(true); #>
+
+
+
+<#+
+    internal string GetDataTypeDeclaration(SqlColumnInfo column)
+    {
+        return GetDataTypeDeclaration(
+            columnName: column.ColumnName,
+            dataType: column.DataType,
+            characterMaxLength: column.CharacterMaxLength,
+            numericPrecision: column.NumericPrecision,
+            numericScale: column.NumericScale);
+    }
+
+    /// <summary>
+    /// Returns a string that contains T-SQL declaration for the specified data 
+    /// type. For string data types this includes maximum length, for numeric 
+    /// data types this includes scale and precision.
+    /// </summary>
+    /// <param name="column"></param>
+    /// <param name="characterMaxLength"></param>
+    /// <param name="numericPrecision"></param>
+    /// <param name="numericScale"></param>
+    /// <param name="columnName"></param>
+    /// <param name="dataType"></param>
+    /// <returns></returns>
+    internal string GetDataTypeDeclaration(string columnName, string dataType, int? characterMaxLength, int? numericPrecision, int? numericScale)
+    {
+        if (String.IsNullOrWhiteSpace(columnName) || String.IsNullOrWhiteSpace(dataType))
+        {
+            return String.Empty;
+        }
+
+        var sb = new StringBuilder();
+
+		sb.Append( String.Format("@{0} {1}", columnName, dataType.ToUpper()));
+
+        switch (dataType.ToLower())
+        {
+            case "binary":
+            case "char":
+            case "nchar":
+            case "nvarchar":
+            case "varbinary":
+            case "varchar":
+                sb.Append( String.Format("({0})", characterMaxLength == -1 ? "MAX" : characterMaxLength.ToString()));
+                break;
+            case "decimal":
+            case "numeric":
+                sb.Append( string.Format("({0}, {1})", numericPrecision, numericScale));
+                break;
+        }
+
+        if (dataType.ToLower() == "timestamp") //turd of a datatype
+        {
+            sb.Append(" = null");
+        }
+        sb.Append(Manager.NewLine());
+        return sb.ToString();
+    }
+
+    internal string BuildSearchInputParameters(List<SqlColumnInfo> columns)
+    {
+        var sb = new StringBuilder();
+        var paramCount = 0;
+        foreach(var column in columns)
+        {
+            switch (column.DataType.ToLower())
+            {
+                    //case "binary":
+                case "char":
+                case "nchar":
+                case "nvarchar":
+                    //case "varbinary":
+                case "varchar":
+                    var startsWith = column.ColumnName + "StartsWith";
+                    var contains = column.ColumnName + "Contains";
+                    if (paramCount != 0)
+                    {
+                        sb.Append(",");
+                    }
+                    
+					sb.Append(GetDataTypeDeclaration(
+                        columnName: startsWith,
+                        dataType: column.DataType,
+                        characterMaxLength: column.CharacterMaxLength,
+                        numericPrecision: column.NumericPrecision,
+                        numericScale: column.NumericScale));
+					
+					sb.Append(",");
+					
+					sb.Append(GetDataTypeDeclaration(
+                        columnName: contains,
+                        dataType: column.DataType,
+                        characterMaxLength: column.CharacterMaxLength,
+                        numericPrecision: column.NumericPrecision,
+                        numericScale: column.NumericScale));
+
+                    paramCount++;
+                    break;
+                case "decimal":
+                case "numeric":
+                case "bigint":
+                case "int":
+                case "smallint":
+                    var greaterThan = column.ColumnName + "GreaterThan";
+                    var lessThan = column.ColumnName + "LessThan";
+                    if (paramCount != 0)
+                    {
+                        sb.Append(",");
+                    }
+                    
+					sb.Append(GetDataTypeDeclaration(
+                        columnName: greaterThan,
+                        dataType: column.DataType,
+                        characterMaxLength: column.CharacterMaxLength,
+                        numericPrecision: column.NumericPrecision,
+                        numericScale: column.NumericScale));
+					
+					sb.Append(",");
+					
+					sb.Append(GetDataTypeDeclaration(
+                        columnName: lessThan,
+                        dataType: column.DataType,
+                        characterMaxLength: column.CharacterMaxLength,
+                        numericPrecision: column.NumericPrecision,
+                        numericScale: column.NumericScale));
+
+                    paramCount++;
+                    break;
+                case "date":
+                case "datetime":
+                    var after = column.ColumnName + "After";
+                    var before = column.ColumnName + "Before";
+                    if (paramCount != 0)
+                    {
+                        sb.Append(",");
+                    }
+                    
+					sb.Append(GetDataTypeDeclaration(
+                        columnName: after,
+                        dataType: column.DataType,
+                        characterMaxLength: column.CharacterMaxLength,
+                        numericPrecision: column.NumericPrecision,
+                        numericScale: column.NumericScale));
+					
+					sb.Append(",");
+					
+					sb.Append(GetDataTypeDeclaration(
+                        columnName: before,
+                        dataType: column.DataType,
+                        characterMaxLength: column.CharacterMaxLength,
+                        numericPrecision: column.NumericPrecision,
+                        numericScale: column.NumericScale));
+                    paramCount++;
+                    break;
+            }
+        }
+
+        return sb.ToString();
+    }
+
+    internal List<Tuple<string,string>> BuildSearchConditionParameter(SqlColumnInfo column)
+    {
+        var result = new List<Tuple<string, string>>();
+
+        switch (column.DataType.ToLower())
+        {
+                //case "binary":
+            case "char":
+            case "nchar":
+            case "nvarchar":
+                //case "varbinary":
+            case "varchar":
+                var startsWith = column.ColumnName + "StartsWith";
+                result.Add(new Tuple<string, string>(
+                    item1: startsWith,
+                    item2: String.Format("AND ([{0}] LIKE (@{1} + ''%''))", column.ColumnName, startsWith)));
+
+                var contains = column.ColumnName + "Contains";
+                result.Add(new Tuple<string, string>(
+                    item1: contains,
+                    item2: String.Format("AND ([{0}] LIKE (''%'' + @{1} + ''%''))", column.ColumnName, contains)));
+                break;
+            case "decimal":
+            case "numeric":
+            case "bigint":
+            case "int":
+            case "smallint":
+                var greaterThan = column.ColumnName + "GreaterThan";
+                result.Add(new Tuple<string, string>(
+                    item1: greaterThan,
+                    item2: String.Format("AND ([{0}] >= @{1})", column.ColumnName, greaterThan)));
+
+                var lessThan = column.ColumnName + "LessThan";
+                result.Add(new Tuple<string, string>(
+                    item1: lessThan,
+                    item2: String.Format("AND ([{0}] <= @{1})", column.ColumnName, lessThan)));
+
+                break;
+            case "date":
+            case "datetime":
+                var after = column.ColumnName + "After";
+                result.Add(new Tuple<string, string>(
+                    item1: after,
+                    item2: String.Format("AND ([{0}] >= @{1})", column.ColumnName, after)
+                    ));
+
+                var before = column.ColumnName + "Before";
+                result.Add(new Tuple<string, string>(
+                    item1: before,
+                    item2: String.Format("{0} ([{1}] <= @{2})", "AND", column.ColumnName, before)
+                    ));
+                break;
+        }
+        return result;
+    }
+
+    internal string BuildUpdateInputParams(List<SqlColumnInfo> columns)
+    {
+        var sb = new StringBuilder();
+
+        for (int i = 0; i < columns.Count; i++)
+        {
+            sb.Append(this.GetDataTypeDeclaration(column: columns[i]));
+            if (columns.Count != i + 1) sb.Append(",");
+        }
+
+        return sb.ToString();
+    }
+
+ #>

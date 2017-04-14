@@ -1,0 +1,44 @@
+﻿<#@ template debug="true" hostspecific="true" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ assembly name="$(ProjectDir)\bin\Debug\SqlMeta.dll" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="SqlMeta" #>
+<#@ include file="Manager.tt" #>
+<# var manager = Manager.Create(Host, GenerationEnvironment); #>
+<#@ output extension="/" #>
+<# var extension = "cs"; #>	 
+<# 			  
+    var nameSpace = Inputs.EntityNamespace;
+    var appendToName= "Result";
+    var dataRepo = new MetaRepository(manager.ConnectionString);
+    var tables = dataRepo.GetTableInfo().Where(t => !t.TableName.Contains("sysdiagram")).ToList();
+
+foreach (var table in tables)
+{
+    manager.StartNewFile(String.Format("{0}_{1}.{2}", table.TableName, appendToName, extension));
+#>
+namespace <#=nameSpace#>
+{
+	using System;
+
+	public class <#=table.TableName#>_<#=appendToName#>
+	{
+<# 
+foreach (SqlMeta.Data.Types.SqlColumnInfo column in table.Columns)
+{
+#>
+	    public <#=Manager.GetCSharpTypeFromSqlType(sqlType:column.DataType,isNullable:column.IsNullable)#> <#=column.ColumnName#> { get; set; }
+<#
+}
+#>
+	}
+}
+<# manager.EndBlock(); #>
+
+<#
+}
+#>
+
+<# manager.Process(true); #>
