@@ -11,6 +11,6 @@
         public DateTime Created { get; set; }
         public DateTime LastAltered { get; set; }
         public List<SqlParameterInfo> Parameters { get; set; }
-        public List<DataColumn> ResultColumns { get; set; } //no idea how to deal with multiple result sets just yet
+        public List<ResultColumn> ResultColumns { get; set; } //no idea how to deal with multiple result sets just yet
     }
 }

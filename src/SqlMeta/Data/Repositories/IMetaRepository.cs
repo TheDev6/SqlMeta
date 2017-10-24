@@ -49,7 +49,7 @@ namespace SqlMeta.Data.Repositories
         /// <param name="schema"></param>
         /// <param name="storedProcName"></param>
         /// <returns></returns>
-        List<DataColumn> GetColumnInfoFromStoredProcResult(string schema, string storedProcName);
+        List<ResultColumn> GetColumnInfoFromStoredProcResult(string schema, string storedProcName);
 
         /// <summary>
         ///     Get the input parameters for a stored procedure

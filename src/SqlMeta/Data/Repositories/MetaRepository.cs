@@ -7,6 +7,7 @@
     using System.Linq;
     using System.Text;
     using Dapper;
+    using Mappers;
     using Types;
     using Wrappers;
     using Wrappers.Base;
@@ -211,7 +212,7 @@
         /// <param name="schema"></param>
         /// <param name="storedProcName"></param>
         /// <returns></returns>
-        public List<DataColumn> GetColumnInfoFromStoredProcResult(string schema, string storedProcName)
+        public List<ResultColumn> GetColumnInfoFromStoredProcResult(string schema, string storedProcName)
         {
             //this one actually needs to use the dataset because it has the only accurate information about columns and if they can be null or not.
             var sb = new StringBuilder();
@@ -252,10 +253,10 @@
                 }
             }
 
-            var list = new List<DataColumn>();
+            var list = new List<ResultColumn>();
             if (ds.Tables.Count > 0)
             {
-                list = ds.Tables["MyTable"].Columns.Cast<DataColumn>().ToList();
+                list = ds.Tables["MyTable"].Columns.Cast<DataColumn>().ToList().ToResultColumns();
             }
 
             return list;

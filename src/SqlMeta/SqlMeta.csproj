@@ -48,8 +48,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Data\Mappers\DataColumnMapper.cs" />
     <Compile Include="Data\Repositories\IMetaRepository.cs" />
     <Compile Include="Data\Repositories\MetaRepository.cs" />
+    <Compile Include="Data\Types\ResultColumn.cs" />
     <Compile Include="Data\Types\SqlColumnInfo.cs" />
     <Compile Include="Data\Types\SqlParameterInfo.cs" />
     <Compile Include="Data\Types\SqlStoredProcedureInfo.cs" />
