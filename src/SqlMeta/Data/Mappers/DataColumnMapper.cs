@@ -31,6 +31,8 @@
                 //r.Site = dc.Site
                 r.ReadOnly = dc.ReadOnly;
                 r.Unique = dc.Unique;
+
+                result.Add(r);
             }
             return result;
         }
